@@ -7,9 +7,9 @@ import com.rabbitmq.client.DeliverCallback;
 
 public class Worker {
     public static void main(String[] args) throws Exception {
-        System.out.println("Consumidor");
+        System.out.println("## Worker ##");
 
-        String NOME_FILA = "filaOla";
+        String NOME_FILA = "task_queue";
 
         //criando a fabrica de conexoes e criando uma conexao
         ConnectionFactory connectionFactory = new ConnectionFactory();
@@ -20,32 +20,41 @@ public class Worker {
 
         //criando um canal e declarando uma fila
         Channel canal = conexao.createChannel();
-        canal.queueDeclare(NOME_FILA, false, false, false, null);
+        boolean duravel = true;
 
+        canal.queueDeclare(NOME_FILA, duravel, false, false, null);
+        System.out.println ("[*] Aguardando mensagens. Para sair, pressione CTRL + C");
+
+        int prefetchCount = 1;
+        canal.basicQos(prefetchCount); // Aceita apenas uma mensagem unacked(sem ack) de cada vez
         //Definindo a funcao callback
         DeliverCallback callback = (consumerTag, delivery) -> {
             String mensagem = new String(delivery.getBody(), "UTF-8");
-            System.out.println("Recebi a mensagem: " + mensagem);
+            System.out.println("Recebi a mensagem de Luiz Gonzaga de Lima Neto: " + mensagem);
             System.out.println ("[x] Recebido '" + mensagem + "'");
             try {
                 doWork (mensagem);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             } finally {
                 System.out.println ("[x] Feito");
+                canal.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
             }
         };
 
-        boolean autoAck = true; // ack é feito aqui. Como está autoAck, enviará automaticamente
+        boolean autoAck = false; // ack é feito aqui. Como está autoAck, enviará automaticamente
 
         //Consome da fila
         canal.basicConsume(NOME_FILA, autoAck, callback, consumerTag -> {});
-        System.out.println("Continuarei executando outras atividades enquanto não chega mensagem...");
     }
 
-    private static void doWork (String task) throws InterruptedException {
+    private static void doWork(String task) {
         for (char ch: task.toCharArray ()) {
-            if (ch == '.') Thread.sleep (1000);
+            if (ch == '.') {
+                try {
+                    Thread.sleep (1000);
+                } catch (InterruptedException _ignored) {
+                    Thread.currentThread().interrupt();
+                }
+            }
         }
-     }    
+    }   
 }
