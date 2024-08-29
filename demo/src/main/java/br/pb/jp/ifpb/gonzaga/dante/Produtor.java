@@ -20,21 +20,26 @@ public class Produtor {
         connectionFactory.setPassword("Admin123XX_"); 
 
 
-        String NOME_FILA = "filaOla";
-        try(
-                //criacao de uma coneccao
-                Connection connection = connectionFactory.newConnection();
-                //criando um canal na conexao
-                Channel channel = connection.createChannel()) {
-            //Esse corpo especifica o envio da mensagem para a fila
+        String NOME_FILA = "tempoTotal";
+        for(int i=1;i<=1000;i++){
+            try(
+                    //criacao de uma coneccao
+                    Connection connection = connectionFactory.newConnection();
+                    //criando um canal na conexao
+                    Channel channel = connection.createChannel()) {
+                //Esse corpo especifica o envio da mensagem para a fila
 
-            //Declaracao da fila. Se nao existir ainda no queue manager, serah criada. Se jah existir, e foi criada com
-            // os mesmos parametros, pega a referencia da fila. Se foi criada com parametros diferentes, lanca excecao
-            channel.queueDeclare(NOME_FILA, false, false, false, null);
-            String mensagem = "Olá mundo!";
-            //publica uma mensagem na fila
-            channel.basicPublish("", NOME_FILA, null, mensagem.getBytes());
-            System.out.println("Enviei mensagem: " + mensagem);
+                //Declaracao da fila. Se nao existir ainda no queue manager, serah criada. Se jah existir, e foi criada com
+                // os mesmos parametros, pega a referencia da fila. Se foi criada com parametros diferentes, lanca excecao
+                channel.queueDeclare(NOME_FILA, false, false, false, null);
+                
+                String mensagem = ""+i+"-"+System.currentTimeMillis();
+                //publica uma mensagem na fila
+                channel.basicPublish("", NOME_FILA, null, mensagem.getBytes());
+                if(i==1 || i==1000){
+                    System.out.println("Enviei mensagem: " + mensagem);
+                }
+            }
         }
     }
 }

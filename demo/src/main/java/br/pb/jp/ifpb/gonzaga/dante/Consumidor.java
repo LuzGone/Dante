@@ -9,7 +9,7 @@ public class Consumidor {
     public static void main(String[] args) throws Exception {
         System.out.println("Consumidor");
 
-        String NOME_FILA = "filaOla";
+        String NOME_FILA = "tempoTotal";
 
         //criando a fabrica de conexoes e criando uma conexao
         ConnectionFactory connectionFactory = new ConnectionFactory();
@@ -25,11 +25,17 @@ public class Consumidor {
         //Definindo a funcao callback
         DeliverCallback callback = (consumerTag, delivery) -> {
             String mensagem = new String(delivery.getBody());
-            System.out.println("Recebi a mensagem: " + mensagem);
+            String[] mensagemDividida = mensagem.split("-");
+            int numero = Integer.valueOf(mensagemDividida[0]);
+            int tempo = Integer.valueOf(mensagemDividida[1]);
+            if(numero == 1 || numero == 1000){
+                System.out.println("Recebi a mensagem: " + mensagem);
+                System.out.println("Tempo envio: " + tempo);
+                System.out.println("Tempo recebimento: " + System.currentTimeMillis());
+            }  
         };
-
         //Consome da fila
-        canal.basicConsume(NOME_FILA, true, callback, consumerTag -> {});
+        canal.basicConsume(NOME_FILA, false, callback, consumerTag -> {});
         System.out.println("Continuarei executando outras atividades enquanto não chega mensagem...");
     }
 }
